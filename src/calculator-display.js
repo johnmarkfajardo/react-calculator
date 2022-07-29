@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import CalcContext from './calculator-context';
 
 /**
  * CalculatorDisplay
@@ -6,10 +7,10 @@ import React, { useEffect, useRef, useState } from "react";
  * - Obtained from https://codepen.io/mjijackson/pen/xOzyGX by Michael Jackson
  * - I got stuck making my own solution, time is running out :s
  * - The best solution is out there so no need to re-invent the wheel
- * @param {String} value 
+ * @param {String} text 
  * @returns <Function Component>
  */
-function CalculatorDisplay({value}) {
+function CalcDisplay() {
 	const [scale, setScale] = useState(1);
 	const ref = useRef(null);
 
@@ -32,7 +33,15 @@ function CalculatorDisplay({value}) {
 		}
 	});
 
-	return <div style={{ transform: `scale(${scale},${scale})` }} ref={ref} className="calculator__output">{value}</div>;
+	return (
+		<CalcContext.Consumer>
+			{ctx => (
+				<div style={{ transform: `scale(${scale},${scale})` }} ref={ref} className="calculator__output">
+					{ctx.screenText}
+				</div>
+			)}
+		</CalcContext.Consumer>
+	);
 }
 
-export default CalculatorDisplay;
+export default CalcDisplay;

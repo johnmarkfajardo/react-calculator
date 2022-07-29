@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import CalculatorButton from './calculator-button';
-import CalculatorDisplay from './calculator-display';
+import React, { useState, useEffect } from 'react';
+import CalcButton from './calculator-button';
+import CalcDisplay from './calculator-display';
+import CalcContext from './calculator-context';
 
 /**
  * Calculator
@@ -8,12 +9,23 @@ import CalculatorDisplay from './calculator-display';
  * @returns <Function Component>
  */
 function Calculator() {
+	const maxLength = 14; // maximum character length we can enter
 	const [output, setOutput] = useState('0');
 	const [input, setInput] = useState(null);
 	const [hasOperator, setHasOperator] = useState(false);
 	const [operator, setOperator] = useState(null);
+	const [screenText, setScreenText] = useState('0');;
 
-	const maxLength = 14; // maximum character length we can enter
+	useEffect(() => {
+		// it's for language-sensitive date and time formatting but it can be used for numbers I guess
+		// well it works, it's the best solution I guess
+		// parts of the code were copied from AutoScalingText React Component
+		// obtained from https://codepen.io/mjijackson/pen/xOzyGX by Michael Jackson
+		setScreenText(output.toLocaleString(navigator.language || 'en-US', {
+			useGrouping: true,
+			maximumFractionDigits: 6
+		}));
+	}, [output]);
 
 	const calculate = () => {
 		if (input === null) {
@@ -45,14 +57,7 @@ function Calculator() {
 				break;
 		}
 
-		// it's for language-sensitive date and time formatting but it can be used for numbers I guess
-		// well it works, it's the best solution I guess
-		// parts of the code were copied from AutoScalingText React Component
-		// obtained from https://codepen.io/mjijackson/pen/xOzyGX by Michael Jackson
-		setOutput(answer.toLocaleString(navigator.language || 'en-US', {
-			useGrouping: true,
-			maximumFractionDigits: 6
-		}));
+		setOutput(answer);
 		setInput(null);
 	};
 
@@ -107,31 +112,11 @@ function Calculator() {
 	};
 
 	const addOperator = key => {
-		let newOperator = null;
-
-		switch (key) {
-			case '×':
-				newOperator = '*';
-				break;
-			case '÷':
-				newOperator = '/';
-				break;
-			case '+':
-				newOperator = '+';
-				break;
-			case '-':
-				newOperator = '-';
-				break;
-			default:
-				// nothing to do
-				break;
-		}
-
 		if (input === null) {
 			setInput(parseFloat(output));
 		}
 
-		setOperator(newOperator);
+		setOperator(key);
 		setHasOperator(true);
 	};
 
@@ -155,43 +140,57 @@ function Calculator() {
 	};
 
 	return (
-		<div className="calculator">
-			<div className="calculator__screen">
-				<div className="calculator__screen__inner">
-					<CalculatorDisplay value={output} />
+		<CalcContext.Provider value={
+			{
+				screenText: screenText,
+				calculate: calculate,
+				addDigit: addDigit,
+				setPercent: setPercent,
+				addDot: addDot,
+				toggleSign: toggleSign,
+				addOperator: addOperator,
+				removeLast: removeLast,
+				clearAll: clearAll
+			}
+		}>
+			<div className="calculator">
+				<div className="calculator__screen">
+					<div className="calculator__screen__inner">
+						<CalcDisplay />
+					</div>
+				</div>
+				<div className="calculator__row">
+					<CalcButton type="clear">AC</CalcButton>
+					<CalcButton type="toggle">±</CalcButton>
+					<CalcButton type="percent">%</CalcButton>
+					<CalcButton type="operator" operator="/">÷</CalcButton>
+				</div>
+				<div className="calculator__row">
+					<CalcButton type="digit">7</CalcButton>
+					<CalcButton type="digit">8</CalcButton>
+					<CalcButton type="digit">9</CalcButton>
+					<CalcButton type="operator" operator="*">×</CalcButton>
+				</div>
+				<div className="calculator__row">
+					<CalcButton type="digit">4</CalcButton>
+					<CalcButton type="digit">5</CalcButton>
+					<CalcButton type="digit">6</CalcButton>
+					<CalcButton type="operator" operator="-">-</CalcButton>
+				</div>
+				<div className="calculator__row">
+					<CalcButton type="digit">1</CalcButton>
+					<CalcButton type="digit">2</CalcButton>
+					<CalcButton type="digit">3</CalcButton>
+					<CalcButton type="operator" operator="+">+</CalcButton>
+				</div>
+				<div className="calculator__row">
+					<CalcButton type="digit">0</CalcButton>
+					<CalcButton type="dot">.</CalcButton>
+					<CalcButton type="remove">⇤</CalcButton>
+					<CalcButton type="equals">=</CalcButton>
 				</div>
 			</div>
-			<div className="calculator__row">
-				<CalculatorButton title='AC' isSpecial={true} onClick={clearAll} />
-				<CalculatorButton title='±' isSpecial={true} onClick={toggleSign} />
-				<CalculatorButton title='%' isSpecial={true} onClick={setPercent} />
-				<CalculatorButton title='÷' isSpecial={true} onClick={addOperator} />
-			</div>
-			<div className="calculator__row">
-				<CalculatorButton title='7' onClick={addDigit} />
-				<CalculatorButton title='8' onClick={addDigit} />
-				<CalculatorButton title='9' onClick={addDigit} />
-				<CalculatorButton title='×' isSpecial={true} onClick={addOperator} />
-			</div>
-			<div className="calculator__row">
-				<CalculatorButton title='4' onClick={addDigit} />
-				<CalculatorButton title='5' onClick={addDigit} />
-				<CalculatorButton title='6' onClick={addDigit} />
-				<CalculatorButton title='-' isSpecial={true} onClick={addOperator} />
-			</div>
-			<div className="calculator__row">
-				<CalculatorButton title='1' onClick={addDigit} />
-				<CalculatorButton title='2' onClick={addDigit} />
-				<CalculatorButton title='3' onClick={addDigit} />
-				<CalculatorButton title='+' isSpecial={true} onClick={addOperator} />
-			</div>
-			<div className="calculator__row">
-				<CalculatorButton title='0' onClick={addDigit} />
-				<CalculatorButton title='.' onClick={addDot} />
-				<CalculatorButton title='⇤' isSpecial={true} onClick={removeLast} />
-				<CalculatorButton title='=' isSpecial={true} onClick={calculate} />
-			</div>
-		</div>
+		</CalcContext.Provider>
 	);
 }
 
