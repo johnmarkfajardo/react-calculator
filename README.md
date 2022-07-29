@@ -6,6 +6,16 @@ A simple calculator built using React JS
 
 - [@johnmarkfajardo](https://github.com/johnmarkfajardo)
 
+## Installation
+
+Clone react-calculator with git
+
+```bash
+  git clone https://github.com/johnmarkfajardo/react-calculator.git
+  cd react-calculator
+  npm install
+```
+
 ## Available Scripts
 
 In the project directory, you can run:
